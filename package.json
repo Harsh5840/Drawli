@@ -1,5 +1,5 @@
 {
-  "name": "my-turborepo",
+  "name": "drawli",
   "private": true,
   "scripts": {
     "build": "turbo run build",
