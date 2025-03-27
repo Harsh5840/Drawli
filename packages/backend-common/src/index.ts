@@ -1,0 +1,1 @@
+export const JWT_SECRET = process.env.JWT_SECRET || "123123";  //added pnpm add @types/node
