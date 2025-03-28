@@ -9,10 +9,10 @@ datasource db {
 
 model User {
   id       String @id @default(uuid()) //stringgggggg    //we used @id to depict that it is the primary key of the table
-  email    String
+  email    String  @unique
   password String
   name     String
-  photo    String
+  photo    String?
   rooms   Room[]
   chats   Chat[]
 }
