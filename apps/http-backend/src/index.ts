@@ -1,36 +1,83 @@
 import express from "express";
 import z from "zod";
+import cors from "cors";
 import jwt from "jsonwebtoken";
 import { JWT_SECRET } from "@repo/backend-common/config";
 import { middleware } from "./middleware";
 import {CreateUserSchema, SigninSchema} from "@repo/common/types";
+import bcrypt from "bcrypt";
+import {prismaClient} from "@repo/db/client";
 const app = express();
+const saltRounds = 10;
 
-app.post("/signup", (req,res)=>{
-    const data = CreateUserSchema.safeParse(req.body);
-    if(!data.success) {
+app.use(express.json());
+app.use(cors())
+
+app.post("/signup", async (req, res) => {
+
+    const parsedData = CreateUserSchema.safeParse(req.body);
+    if (!parsedData.success) {
+        console.log(parsedData.error);
         res.json({
             message: "Incorrect inputs"
         })
         return;
     }
-    res.json({
-        userId: "123"   //importantttttttttt    
-    })
+
+    const hashPassword = await bcrypt.hash(parsedData.data.password , saltRounds);    //parsedData.password is incorrect and parsedData.data.password
+
+    try {
+        const user = await prismaClient.user.create({   //here we mentioned prismaClient.user.create and not used User
+            data: {
+                email: parsedData.data?.username,
+                password: hashPassword,
+                name: parsedData.data.name
+            }
+        })
+        res.json({
+            userId: user.id
+        })
+    } catch(e) {
+        res.status(411).json({
+            message: "User already exists with this username"            //important status code for the message
+        })
+    }
 })
 
-app.post("/signin", (req,res)=>{
-    const data = SigninSchema.safeParse(req.body);
-    if(!data.success) {
-        res.json({
+app.post("/signin", async (req, res) => {
+    const parsedData = SigninSchema.safeParse(req.body);
+    if (!parsedData.success) {    //the use of success keyword here
+        res.json({ 
             message: "Incorrect inputs"
         })
         return;
     }
-    const userId = 1;
-    const token = jwt.sign({  //we are encoding an object not a string
-        userId
-    },JWT_SECRET);
+
+    const user = await prismaClient.user.findFirst({
+        where: {
+            email: parsedData.data.username
+        }
+    });
+
+    if (!user) {
+        res.status(403).json({
+            message: "Not authorized"
+        });
+        return;
+    }
+
+    const validPassword = await bcrypt.compare(parsedData.data.password, user.password);
+    if (!validPassword) {
+        res.status(403).json({
+            message: "Not authorized"
+        });
+        return;
+    }
+
+    const token = jwt.sign({
+        userId: user?.id  //the wuestion check mark here
+    }, JWT_SECRET);
+
     res.json({
         token
     })
