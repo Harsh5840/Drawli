@@ -111,6 +111,18 @@ app.post("/room", middleware, async (req,res)=>{
 }
 })
 
+app.get("/chats/:roomId", async (req, res) => {  //to get the old messages
+    const roomId = Number(req.params.roomId);
+    const messgaes = await prismaClient.room.findMany({          //we used findMany and not findOne because we are fetching chats and not room
+         where: {
+            id: roomId
+         },
+         orderBy : {
+            id:  "desc" 
+         }
+    })
+})
+
 
 
 app.listen(5000 , ()=>{

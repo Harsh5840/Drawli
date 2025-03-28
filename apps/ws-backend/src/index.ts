@@ -1,8 +1,8 @@
 import { WebSocket, WebSocketServer } from "ws";
 import jwt, { JwtPayload } from "jsonwebtoken";
 import { JWT_SECRET } from "@repo/backend-common/config";
-
-const wss = new WebSocketServer({ port: 6000 });
+import {prismaClient} from "@repo/db/client";
+const wss = new WebSocketServer({ port: 6060 });
 
 interface Users  {
         userId: string,
@@ -43,7 +43,7 @@ wss.on("connection", function connnection(ws, request) {
         ws
   })
 
-  ws.on("message", function message(data) {
+  ws.on("message", async function message(data) {
         const parsedData = JSON.parse(data as unknown as string);
         if(parsedData.type === "join_room") {
                 const user = users.find(x => x.ws === ws);
@@ -60,6 +60,14 @@ wss.on("connection", function connnection(ws, request) {
         if (parsedData.type = "chat") {
                 const roomId = parsedData.roomId;
                 const message = parsedData.message;
+                //learn the implementation of queues here rather than db pushing
+        await prismaClient.chat.create({
+                data:{
+                        roomId,
+                        message,
+                        userId
+                }
+        })
 
            users.forEach(user => {
                 if(user.rooms.includes(roomId)) {
@@ -71,6 +79,6 @@ wss.on("connection", function connnection(ws, request) {
                 }
            })
         }
-    ws.send("pong");
+
   });
 });
