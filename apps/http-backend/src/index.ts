@@ -4,7 +4,7 @@ import cors from "cors";
 import jwt from "jsonwebtoken";
 import { JWT_SECRET } from "@repo/backend-common/config";
 import { middleware } from "./middleware";
-import {CreateUserSchema, SigninSchema} from "@repo/common/types";
+import {CreateRoomSchema, CreateUserSchema, SigninSchema} from "@repo/common/types";
 import bcrypt from "bcrypt";
 import {prismaClient} from "@repo/db/client";
 const app = express();
@@ -83,7 +83,22 @@ app.post("/signin", async (req, res) => {
     })
 })
 
-app.post("/room", middleware, (req,res)=>{
+app.post("/room", middleware, async (req,res)=>{
+    const parsedData = CreateRoomSchema.safeParse(req.body);
+    if(!parsedData.success){
+        res.json({
+            message: "Incorrect inputs"
+        })
+        return;
+    }
+    //@ts-ignore
+    const userId = req.userId;
+    await prismaClient.room.create({
+        data:{
+            slug: parsedData.data.name,
+            adminId: userId
+        }
+    })
     res.json({
         roomId: 123
     })
@@ -91,4 +106,6 @@ app.post("/room", middleware, (req,res)=>{
 
 
 
-app.listen(5000);
+app.listen(5000 , ()=>{
+    console.log("listening in http port");
+});
