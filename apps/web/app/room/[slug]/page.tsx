@@ -7,13 +7,14 @@ async function getRoomId(slug: string) {
   return response.data.room.id;         //response room return kr rha hai to we used room.id
 }
 
-export default async function ChatRoom1({
-  params
-}: {
+type PageParams = {
   params: {
     slug: string;
-  }
-}) {
-  const roomId = await getRoomId(params.slug);
+  };
+};
+
+export default async function Page({ params }: PageParams)  {
+  const slug = (await params).slug
+  const roomId = await getRoomId(slug);
   return <ChatRoom id={roomId} />
 }
