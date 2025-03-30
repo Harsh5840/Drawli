@@ -1,3 +1,4 @@
+
 import { RoomCanvas } from "@/app/components/RoomCanvas";
 
 
@@ -8,6 +9,7 @@ export default async function CanvasPage({params} :{  //whenever it says ki clie
 })  {
    
     const roomId = (await params).roomId;
+    console.log("Received roomId in CanvasPage:", roomId);
     
     return <RoomCanvas roomId={roomId} />
 }
