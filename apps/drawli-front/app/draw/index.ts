@@ -26,11 +26,10 @@ export async function InitDraw(canvas: HTMLCanvasElement, roomId: string , socke
         clearCanvas(existingShapes , canvas , ctx);
         }
     }
-
+ 
   let clicked = false;
   let startX = 0;
   let startY = 0;
-
 
   // Initialize background
   ctx.fillStyle = "rgba(0,0,0)";
@@ -38,7 +37,6 @@ export async function InitDraw(canvas: HTMLCanvasElement, roomId: string , socke
 
   const handleMouseDown = (e: MouseEvent) => {
     clicked = true;
-
     startX = e.clientX;
     startY = e.clientY;
   };
@@ -47,13 +45,20 @@ export async function InitDraw(canvas: HTMLCanvasElement, roomId: string , socke
     clicked = false;
     const width = e.clientX - startX;
     const height = e.clientY - startY;
-    existingShapes.push({
+    const shape: Shape = {
       type: "rect",
       x: startX,
       y: startY,
       height,
       width,
-    });
+    }
+    existingShapes.push(shape);
+    socket.send(JSON.stringify({
+      type: "chat",
+      message: JSON.stringify({
+        shape
+      })
+    }))
   };
 
   const handleMouseMove = (e: MouseEvent) => {
