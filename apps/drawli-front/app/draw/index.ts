@@ -13,15 +13,24 @@ type Shape =
       type: "circle";
     };
 
-export async function InitDraw(canvas: HTMLCanvasElement, roomId: string , socket) {
+export async function InitDraw(canvas: HTMLCanvasElement, roomId: string , socket:WebSocket) {
   const ctx = canvas.getContext("2d");
+  if (!ctx) return;
   const existingShapes: Shape[] = await getExistingShapes(roomId);  //so before anything happens we accumulate the preexisting shapes from the database
+    
+    socket.onmessage = (event) => {
+        const message = JSON.parse(event.data);
+        if(message.type === "chat") {
+        const parsedShape = JSON.parse(message.message)
+        existingShapes.push(parsedShape)
+        clearCanvas(existingShapes , canvas , ctx);
+        }
+    }
 
   let clicked = false;
   let startX = 0;
   let startY = 0;
 
-  if (!ctx) return;
 
   // Initialize background
   ctx.fillStyle = "rgba(0,0,0)";
