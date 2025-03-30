@@ -20,6 +20,9 @@ importers:
 
   apps/drawli-front:
     dependencies:
+      axios:
+        specifier: ^1.6.7
+        version: 1.8.4
       lucide-react:
         specifier: ^0.485.0
         version: 0.485.0(react@19.0.0)

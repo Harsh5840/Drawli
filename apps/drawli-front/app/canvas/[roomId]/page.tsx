@@ -1,20 +1,13 @@
-"use client";
-import { InitDraw} from "@/app/draw";
-import { useEffect, useRef } from "react";
+import { RoomCanvas } from "@/app/components/RoomCanvas";
 
-export default function Canvas() {
-    const canvasRef = useRef<HTMLCanvasElement>(null);
+
+export default async function CanvasPage({params} :{  //whenever it says ki client function cant be async then trasnfer the client logic to some other tsx xompoment
+    params: {
+        roomId :string
+    }
+})  {
+   
+    const roomId = (await params).roomId;
     
-
-    useEffect(() => {
-        if (canvasRef.current) {
-            InitDraw(canvasRef.current);
-        }
-    }, [canvasRef]);
-
-    return (
-        <div>
-            <canvas ref={canvasRef} width={window.innerWidth} height={window.innerHeight} ></canvas>
-        </div>
-    );
+    return <RoomCanvas roomId={roomId} />
 }
