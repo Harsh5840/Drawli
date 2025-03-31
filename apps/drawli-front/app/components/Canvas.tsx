@@ -2,8 +2,9 @@ import { useEffect, useRef, useState } from "react";
 import { InitDraw } from "../draw";
 import { IconButton } from "./IconButton";
 import { Circle, Pencil, RectangleHorizontalIcon } from "lucide-react";
+import { Game } from "../draw/Game";
 
-type Shape = "circle" | "rect" | "pencil";
+export type Tool = "circle" | "rect" | "pencil";
 export function Canvas({
   roomId,
   socket,
@@ -13,13 +14,18 @@ export function Canvas({
 }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [selectedTool, setSelectedTool] = useState<Shape >("circle");
+  const [game, Setgame] = useState<Game>();
   useEffect(() => {
-    //@ts-ignore
-    window.selectedTool = selectedTool;
-  } , [selectedTool])                                   
+    game?.setTool(selectedTool)
+  } , [selectedTool, game])
   useEffect(() => {
     if (canvasRef.current) {
-      InitDraw(canvasRef.current, roomId, socket);
+      const g = new Game(canvasRef.current, roomId, socket)
+      Setgame(g);
+      
+      return () => {
+        g.destroy();
+      }
     }
   }, [roomId, socket]);
   console.log("Received roomId in Canvas:", roomId);
