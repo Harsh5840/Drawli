@@ -11,9 +11,23 @@ type Shape =
     }
   | {
       type: "circle";
+      centerX: number;
+      centerY: number;
+      radius: number;
+    }
+  | {
+      type: "pencil";
+      startX: number;
+      startY: number;
+      endX: number;
+      endY: number;
     };
 
-export async function InitDraw(canvas: HTMLCanvasElement, roomId: string, socket: WebSocket) {
+export async function InitDraw(
+  canvas: HTMLCanvasElement,
+  roomId: string,
+  socket: WebSocket
+) {
   const ctx = canvas.getContext("2d");
   if (!ctx) return; // Ensure canvas context exists before proceeding.
 
@@ -46,10 +60,30 @@ export async function InitDraw(canvas: HTMLCanvasElement, roomId: string, socket
 
     const width = e.clientX - canvas.offsetLeft - startX;
     const height = e.clientY - canvas.offsetTop - startY;
-
-    const shape: Shape = { type: "rect", x: startX, y: startY, width, height };
-    existingShapes.push(shape);
-
+    //@ts-ignore
+    const selectedTool = window.selectedTool;
+    let shape : Shape | null
+    if (selectedTool === "rect") {
+      shape = {
+        type: "rect",
+        x: startX,
+        y: startY,
+        width,
+        height,
+      };
+      existingShapes.push(shape);
+    } else if (selectedTool === "circle") {
+      const radius = Math.max(width, height)
+       shape = {
+        type: "circle",
+        centerX: startX + radius,
+        centerY: startY + radius,
+        radius: Math.max(width , height),
+        
+      };
+      existingShapes.push(shape);
+    }
+ //add pencil
     socket.send(
       JSON.stringify({
         type: "chat",
@@ -70,7 +104,20 @@ export async function InitDraw(canvas: HTMLCanvasElement, roomId: string, socket
     // Redraw existing shapes before drawing the temporary rectangle
     clearCanvas(existingShapes, canvas, ctx);
     ctx.strokeStyle = "rgba(255,255,255)";
-    ctx.strokeRect(startX, startY, width, height);
+
+    //@ts-ignore
+    const selectedTool = window.selectedTool;
+    if (selectedTool === "rect") {
+      ctx.strokeRect(startX, startY, width, height);
+    } else if (selectedTool === "circle") {
+      const centerX = startX + width / 2;
+      const centerY = startY + height / 2;
+      const radius = Math.max(width, height) / 2;
+      ctx.beginPath();
+      ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.closePath();
+    }
   };
 
   // Attach event listeners
@@ -86,7 +133,11 @@ export async function InitDraw(canvas: HTMLCanvasElement, roomId: string, socket
   };
 }
 
-function clearCanvas(existingShapes: Shape[], canvas: HTMLCanvasElement, ctx: CanvasRenderingContext2D) {
+function clearCanvas(
+  existingShapes: Shape[],
+  canvas: HTMLCanvasElement,
+  ctx: CanvasRenderingContext2D
+) {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   ctx.fillStyle = "rgba(0,0,0)";
   ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -95,6 +146,15 @@ function clearCanvas(existingShapes: Shape[], canvas: HTMLCanvasElement, ctx: Ca
     if (shape.type === "rect") {
       ctx.strokeStyle = "rgba(255,255,255)";
       ctx.strokeRect(shape.x, shape.y, shape.width, shape.height);
+    } else if (shape.type === "circle") {
+      const radius = Math.max(shape.width, shape.height) / 2;
+      const centerX = shape.x + width / 2;
+      const centerY = shape.y + height / 2;
+
+      ctx.beginPath();
+      ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.closePath();
     }
   });
 }

@@ -14,6 +14,10 @@ export function Canvas({
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [selectedTool, setSelectedTool] = useState<Shape >("circle");
   useEffect(() => {
+    //@ts-ignore
+    window.selectedTool = selectedTool;
+  } , [selectedTool])                                   
+  useEffect(() => {
     if (canvasRef.current) {
       InitDraw(canvasRef.current, roomId, socket);
     }
