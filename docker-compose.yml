@@ -1,0 +1,28 @@
+version: '3.8'
+
+services:
+  http-backend:
+    build: ./apps/http-backend
+    environment:
+      DATABASE_URL: postgresql://neondb_owner:npg_bEuIA0Z7HXOL@ep-frosty-cloud-aderz681-pooler.c-2.us-east-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require
+    ports:
+      - "4000:4000"
+    restart: unless-stopped
+
+  ws-backend:
+    build: ./apps/ws-backend
+    environment:
+      DATABASE_URL: postgresql://neondb_owner:npg_bEuIA0Z7HXOL@ep-frosty-cloud-aderz681-pooler.c-2.us-east-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require
+    ports:
+      - "6060:6060"
+    restart: unless-stopped
+
+  drawli-front:
+    build: ./apps/drawli-front
+    environment:
+      NEXT_PUBLIC_API_URL: http://localhost:4000
+    depends_on:
+      - http-backend
+    ports:
+      - "3000:3000"
+    restart: unless-stopped
