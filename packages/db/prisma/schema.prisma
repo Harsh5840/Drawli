@@ -1,3 +1,4 @@
+
 generator client {
   provider = "prisma-client-js"
 }
@@ -8,29 +9,29 @@ datasource db {
 }
 
 model User {
-  id       String @id @default(uuid()) //stringgggggg    //we used @id to depict that it is the primary key of the table
-  email    String  @unique
-  password String
-  name     String
-  photo    String?
-  rooms   Room[]
-  chats   Chat[]
+  id              String            @id       @default(uuid())
+  email           String            @unique
+  password        String
+  name            String
+  photo           String?
+  rooms           Room[]
+  chats           ChatHistory[]
 }
 
 model Room {
-  id       Int      @id @default(autoincrement())
-  slug     String   @unique     //slug means short url for the room name
-  createAt DateTime @default(now())
-  adminId  String
-  admin    User    @relation(fields: [adminId] , references: [id])
-  chats    Chat[]
+  id              Int               @id        @default(autoincrement())
+  slug            String            @unique
+  createdAt       DateTime                     @default(now()) 
+  adminId         String  
+  admin           User              @relation(fields: [adminId], references: [id])
+  chats           ChatHistory[]
 }
 
-model Chat {                  //each text bubble is a chat
-  id      Int    @id @default(autoincrement())
-  roomId  Int
-  room    Room    @relation(fields: [roomId] , references: [id])
-  message String
-  userId  String
-  user    User    @relation(fields: [userId] , references: [id])
+model ChatHistory {
+  id              Int                 @id       @default(autoincrement())
+  roomId          Int         
+  message         String
+  userId          String
+  room            Room                @relation(fields: [roomId], references: [id])
+  user            User                @relation(fields: [userId], references: [id])
 }

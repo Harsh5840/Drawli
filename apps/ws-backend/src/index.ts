@@ -95,7 +95,7 @@ wss.on("connection", function connection(ws, request) {
 
                 console.log(`Saving message to database: roomId=${roomId}, message=${message}`);
 
-                await prismaClient.chat.create({
+                await prismaClient.chatHistory.create({
                     data: {
                         roomId: Number(roomId),
                         message,

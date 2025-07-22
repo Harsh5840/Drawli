@@ -1,10 +1,9 @@
-import React from 'react'
-import { AuthPage } from '../components/AuthPage'
+import AuthForm from "@/components/AuthForm"
 
-const page = () => {
-  return (
-    <AuthPage isSignin={true} />
-  )
+function Signin() {
+     return (
+          <AuthForm isSignin={true}/>
+     )
 }
 
-export default page
+export default Signin
