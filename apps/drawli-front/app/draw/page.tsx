@@ -11,6 +11,7 @@ const DrawCanvas = () => {
      const canvasRef = useRef<HTMLCanvasElement | null>(null);
      const [game, setGame] = useState<HeroGame>();
      const [shape, setShape] = useState<SelectShapeType>(SelectShapeType.Rect);
+     const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
      
      useEffect(() => {
           if(!game){
@@ -29,9 +30,16 @@ const DrawCanvas = () => {
                g.cleanUp();
           }
      }, [canvasRef]);
+
+     useEffect(() => {
+          if (typeof window !== "undefined") {
+             setDimensions({ width: window.innerWidth, height: window.innerHeight });
+          }
+     }, []);
+
      return (
           <div className="overflow-hidden max-h-screen">
-               <canvas ref={canvasRef} className="z-50 relative" height={window.innerHeight} width={window.innerWidth}></canvas>
+               <canvas ref={canvasRef} className="z-50 relative" height={dimensions.height} width={dimensions.width}></canvas>
                <div className="fixed inset-0 min-h-screen min-w-screen z-0">
                     <DotBackgroundDemo />
                </div>
