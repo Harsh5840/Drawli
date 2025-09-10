@@ -1,19 +1,25 @@
 FROM node:20-alpine
 WORKDIR /app
 
-# Copy monorepo root package manager files
+# Copy root package files
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+
+# Copy all packages
 COPY packages ./packages
+
+# Copy the entire http-backend app (source + tsconfig)
 COPY apps/http-backend ./apps/http-backend
 
-RUN npm install -g pnpm && pnpm install --frozen-lockfile
+# Install dependencies
+RUN npm install -g pnpm && \
+    pnpm install --frozen-lockfile --workspace-root
 
-# Generate Prisma client in the db package
-WORKDIR /app/packages/db
-RUN pnpm install --frozen-lockfile
-RUN pnpm exec prisma generate
+# Build all shared packages
+RUN pnpm -r --filter "./packages/*" build
 
+# Build http-backend
 WORKDIR /app/apps/http-backend
 RUN pnpm build
+
 EXPOSE 4000
-CMD ["pnpm", "start"] 
+CMD ["pnpm", "start"]

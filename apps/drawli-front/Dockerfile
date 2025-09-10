@@ -1,17 +1,25 @@
 FROM node:20-alpine
 WORKDIR /app
 
-# Copy monorepo root package manager files
+# Copy root package files
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+
+# Copy all packages
 COPY packages ./packages
-COPY apps/drawli-front/package.json ./apps/drawli-front/
 
-RUN npm install -g pnpm && pnpm install --frozen-lockfile
-
-# Copy app source
+# Copy the entire frontend app (including pages/app folder)
 COPY apps/drawli-front ./apps/drawli-front
 
+# Install dependencies
+RUN npm install -g pnpm && \
+    pnpm install --frozen-lockfile --workspace-root
+
+# Build all shared packages
+RUN pnpm -r --filter "./packages/*" build
+
+# Build the frontend
 WORKDIR /app/apps/drawli-front
 RUN pnpm build
+
 EXPOSE 3000
-CMD ["pnpm", "start"] 
+CMD ["pnpm", "start"]
