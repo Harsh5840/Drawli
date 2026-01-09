@@ -4,11 +4,12 @@ import "encoding/json"
 
 // ClientMessage is the container for all messages from clients
 type ClientMessage struct {
-	Type      string          `json:"type"` // "handshake", "draw", "viewport", "signal", "join_room"
+	Type      string          `json:"type"` // "handshake", "draw", "viewport", "signal", "join_room", "cursor"
 	Handshake *Handshake      `json:"handshake,omitempty"`
 	DrawOp    json.RawMessage `json:"drawOp,omitempty"` // Flexible shape data from frontend
 	Viewport  *ViewportUpdate `json:"viewport,omitempty"`
 	SignalOp  *WebRTCSignal   `json:"signalOp,omitempty"`
+	Cursor    *CursorUpdate   `json:"cursor,omitempty"`
 	RoomId    string          `json:"roomId,omitempty"`
 }
 

@@ -5,6 +5,8 @@ import Toolbar, { ToolType } from './Toolbar';
 import GridBackground from './GridBackground';
 import ExportDialog from './ExportDialog';
 import ShareDialog from './ShareDialog';
+import RemoteCursors, { RemoteCursor } from './RemoteCursors';
+import VideoCall from './VideoCall';
 
 export interface Point {
     x: number;
@@ -83,9 +85,18 @@ export type Shape =
 interface CanvasEngineProps {
     roomId?: string;
     socket?: WebSocket;
+    userId?: string;
+    userName?: string;
 }
 
-export default function CanvasEngine({ roomId, socket }: CanvasEngineProps) {
+// Generate user color from ID
+const getUserColor = (userId: string) => {
+    const colors = ['#ff6b6b', '#4ecdc4', '#45b7d1', '#96ceb4', '#ffeaa7', '#a29bfe', '#fd79a8', '#00b894'];
+    const index = userId.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0) % colors.length;
+    return colors[index];
+};
+
+export default function CanvasEngine({ roomId, socket, userId = 'guest', userName = 'Guest' }: CanvasEngineProps) {
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const containerRef = useRef<HTMLDivElement>(null);
 
@@ -114,10 +125,77 @@ export default function CanvasEngine({ roomId, socket }: CanvasEngineProps) {
     // Dialog state
     const [showExportDialog, setShowExportDialog] = useState(false);
     const [showShareDialog, setShowShareDialog] = useState(false);
+    const [showVideoCall, setShowVideoCall] = useState(true);
 
     // Text input state
     const [textInput, setTextInput] = useState('');
     const [textPosition, setTextPosition] = useState<Point | null>(null);
+
+    // Collaboration state
+    const [remoteCursors, setRemoteCursors] = useState<Map<string, RemoteCursor>>(new Map());
+    const lastCursorUpdate = useRef<number>(0);
+
+    // Handle incoming WebSocket messages
+    useEffect(() => {
+        if (!socket) return;
+
+        const handleMessage = async (event: MessageEvent) => {
+            try {
+                const data = JSON.parse(
+                    typeof event.data === 'string' ? event.data : await event.data.text()
+                );
+
+                // Handle cursor updates from other users
+                if (data.type === 'cursor' && data.cursor && data.cursor.userId !== userId) {
+                    setRemoteCursors(prev => {
+                        const updated = new Map(prev);
+                        updated.set(data.cursor.userId, {
+                            userId: data.cursor.userId,
+                            userName: data.cursor.userName,
+                            x: data.cursor.x,
+                            y: data.cursor.y,
+                            color: data.cursor.color,
+                            lastUpdate: Date.now(),
+                        });
+                        return updated;
+                    });
+                }
+
+                // Handle draw operations from other users
+                if (data.type === 'draw' && data.drawOp && data.drawOp.id) {
+                    const remoteShape = data.drawOp as Shape;
+                    setShapes(prev => {
+                        // Avoid duplicates
+                        if (prev.some(s => s.id === remoteShape.id)) return prev;
+                        return [...prev, remoteShape];
+                    });
+                }
+            } catch (error) {
+                // Not a JSON message, ignore
+            }
+        };
+
+        socket.addEventListener('message', handleMessage);
+        return () => socket.removeEventListener('message', handleMessage);
+    }, [socket, userId]);
+
+    // Clean up stale cursors periodically
+    useEffect(() => {
+        const interval = setInterval(() => {
+            setRemoteCursors(prev => {
+                const now = Date.now();
+                const updated = new Map(prev);
+                updated.forEach((cursor, id) => {
+                    if (now - cursor.lastUpdate > 5000) {
+                        updated.delete(id);
+                    }
+                });
+                return updated;
+            });
+        }, 1000);
+
+        return () => clearInterval(interval);
+    }, []);
 
     // Generate unique ID
     const generateId = () => `shape_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
@@ -585,7 +663,33 @@ export default function CanvasEngine({ roomId, socket }: CanvasEngineProps) {
             <canvas
                 ref={canvasRef}
                 onMouseDown={handleMouseDown}
-                onMouseMove={handleMouseMove}
+                onMouseMove={(e) => {
+                    handleMouseMove(e);
+                    // Send cursor position (throttled to 30fps)
+                    if (socket && socket.readyState === WebSocket.OPEN) {
+                        const now = Date.now();
+                        if (now - lastCursorUpdate.current > 33) {
+                            lastCursorUpdate.current = now;
+                            const rect = canvasRef.current?.getBoundingClientRect();
+                            if (rect) {
+                                const canvasPoint = screenToCanvas(
+                                    e.clientX - rect.left,
+                                    e.clientY - rect.top
+                                );
+                                socket.send(JSON.stringify({
+                                    type: 'cursor',
+                                    cursor: {
+                                        userId,
+                                        userName,
+                                        x: canvasPoint.x,
+                                        y: canvasPoint.y,
+                                        color: getUserColor(userId),
+                                    },
+                                }));
+                            }
+                        }
+                    }
+                }}
                 onMouseUp={handleMouseUp}
                 onMouseLeave={handleMouseUp}
                 className="absolute inset-0"
@@ -668,6 +772,20 @@ export default function CanvasEngine({ roomId, socket }: CanvasEngineProps) {
                 <ShareDialog
                     roomId={roomId}
                     onClose={() => setShowShareDialog(false)}
+                />
+            )}
+
+            {/* Remote Cursors */}
+            <RemoteCursors cursors={remoteCursors} zoom={zoom} pan={pan} />
+
+            {/* Video Call */}
+            {roomId && socket && showVideoCall && (
+                <VideoCall
+                    socket={socket}
+                    roomId={roomId}
+                    userId={userId}
+                    userName={userName}
+                    onClose={() => setShowVideoCall(false)}
                 />
             )}
         </div>

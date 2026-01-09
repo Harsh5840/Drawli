@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import CanvasEngine from "./canvas/CanvasEngine";
 import { Loader2 } from "lucide-react";
 
@@ -12,11 +12,34 @@ export default function RoomCanvas({ roomId }: RoomCanvasProps) {
      const [socket, setSocket] = useState<WebSocket | null>(null);
      const [connectionState, setConnectionState] = useState<'connecting' | 'connected' | 'error'>('connecting');
 
+     // Generate a stable user ID and name
+     const { userId, userName } = useMemo(() => {
+          // Try to get from localStorage, or generate new ones
+          let storedUserId = typeof window !== 'undefined' ? localStorage.getItem('drawli_userId') : null;
+          let storedUserName = typeof window !== 'undefined' ? localStorage.getItem('drawli_userName') : null;
+
+          if (!storedUserId) {
+               storedUserId = `user_${Date.now()}_${Math.random().toString(36).substr(2, 6)}`;
+               if (typeof window !== 'undefined') {
+                    localStorage.setItem('drawli_userId', storedUserId);
+               }
+          }
+
+          if (!storedUserName) {
+               storedUserName = `Guest ${Math.floor(Math.random() * 1000)}`;
+               if (typeof window !== 'undefined') {
+                    localStorage.setItem('drawli_userName', storedUserName);
+               }
+          }
+
+          return { userId: storedUserId, userName: storedUserName };
+     }, []);
+
      useEffect(() => {
           if (!roomId) return;
 
           const token = localStorage.getItem('token') ?? "";
-          const jwt = token.split(' ')[1] ?? "";
+          const jwt = token.includes(' ') ? token.split(' ')[1] : token;
 
           // Connect to WebSocket
           const ws = new WebSocket(`ws://localhost:8080/ws?token=${jwt}`);
@@ -25,13 +48,19 @@ export default function RoomCanvas({ roomId }: RoomCanvasProps) {
                setSocket(ws);
                setConnectionState('connected');
 
-               // Send handshake
+               // Send handshake with user info
                ws.send(JSON.stringify({
                     type: "handshake",
                     handshake: {
-                         userId: `user_${Date.now()}`,
-                         userName: "Guest",
+                         userId,
+                         userName,
                     }
+               }));
+
+               // Join the room
+               ws.send(JSON.stringify({
+                    type: "join_room",
+                    roomId,
                }));
           };
 
@@ -46,7 +75,7 @@ export default function RoomCanvas({ roomId }: RoomCanvasProps) {
           return () => {
                ws.close();
           };
-     }, [roomId]);
+     }, [roomId, userId, userName]);
 
      // Loading state
      if (connectionState === 'connecting') {
@@ -98,5 +127,12 @@ export default function RoomCanvas({ roomId }: RoomCanvasProps) {
           );
      }
 
-     return <CanvasEngine roomId={roomId} socket={socket ?? undefined} />;
+     return (
+          <CanvasEngine
+               roomId={roomId}
+               socket={socket ?? undefined}
+               userId={userId}
+               userName={userName}
+          />
+     );
 }
