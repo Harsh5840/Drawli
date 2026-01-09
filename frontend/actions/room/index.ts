@@ -21,7 +21,7 @@ const authHeader = () => ({
 
 export async function createRoom({ name }: createRoomType): Promise<boolean> {
      try {
-          const response = await axios.post('http://localhost:4000/v1/room/create-room', {
+          const response = await axios.post('http://localhost:8080/v1/room/create-room', {
                     name
                }, authHeader())
           toast.success(`Room created with name of ${name}`)
@@ -37,7 +37,7 @@ export async function createRoom({ name }: createRoomType): Promise<boolean> {
 
 export const getRoomId = async ({ slug }: { slug: string }): Promise<string> => {
      try {
-          const { data } = await axios.get(`http://localhost:4000/v1/room/${slug}`, authHeader())
+          const { data } = await axios.get(`http://localhost:8080/v1/room/${slug}`, authHeader())
           return data.roomId;
      } catch (e) {
           if (axios.isAxiosError(e) && e.response) {
@@ -50,7 +50,7 @@ export const getRoomId = async ({ slug }: { slug: string }): Promise<string> => 
 
 export const getRoomChat = async ({ roomId }: { roomId: string }): Promise<oldMsgType[]>=> {
      try {
-          const { data } = await axios.get(`http://localhost:4000/v1/room/chat/${roomId}`, authHeader())
+          const { data } = await axios.get(`http://localhost:8080/v1/room/chat/${roomId}`, authHeader())
           return data.masseges;
      } catch (e) {
           if (axios.isAxiosError(e) && e.response) {

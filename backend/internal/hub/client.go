@@ -21,6 +21,9 @@ const (
 var upgrader = websocket.Upgrader{
 	ReadBufferSize:  1024,
 	WriteBufferSize: 1024,
+	CheckOrigin: func(r *http.Request) bool {
+		return true // Allow all origins for development
+	},
 }
 
 // Client is a middleman between the websocket connection and the hub.
@@ -35,6 +38,9 @@ type Client struct {
 
 	// Identity
 	ID       string
+	Name     string
+	Color    string
+	RoomID   string
 	Viewport quadtree.Bounds
 }
 

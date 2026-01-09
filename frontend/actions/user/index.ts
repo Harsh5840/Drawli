@@ -15,7 +15,7 @@ export interface signupType {
 
 export async function signin({ username, password }: signinType): Promise<boolean> {
      try {
-          const { data } = await axios.post('http://localhost:4000/v1/auth/signin', {
+          const { data } = await axios.post('http://localhost:8080/v1/auth/signin', {
                username,
                password
           })
@@ -32,7 +32,7 @@ export async function signin({ username, password }: signinType): Promise<boolea
 
 export async  function signup({ username, password, name }: signupType): Promise<boolean> {
      try {
-          const { data } = await axios.post('http://localhost:4000/v1/auth/signup', {
+          const { data } = await axios.post('http://localhost:8080/v1/auth/signup', {
                name,
                username,
                password

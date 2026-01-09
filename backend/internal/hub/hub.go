@@ -1,6 +1,7 @@
 package hub
 
 import (
+	"encoding/json"
 	"log"
 
 	"github.com/user/drawli/internal/protocol"
@@ -57,6 +58,9 @@ func (h *Hub) Run() {
 			}
 			h.qt.Insert(client)
 
+			// Broadcast presence update
+			h.broadcastPresence()
+
 		case client := <-h.unregister:
 			if _, ok := h.clients[client]; ok {
 				h.qt.Remove(client)
@@ -65,10 +69,47 @@ func (h *Hub) Run() {
 					delete(h.clientsByID, client.ID)
 				}
 				close(client.send)
+
+				// Broadcast presence update
+				h.broadcastPresence()
 			}
 
 		case action := <-h.actions:
 			action()
+		}
+	}
+}
+
+// broadcastPresence sends the current user list to all clients
+func (h *Hub) broadcastPresence() {
+	users := make([]protocol.UserPresence, 0, len(h.clients))
+	for client := range h.clients {
+		if client.ID != "" {
+			users = append(users, protocol.UserPresence{
+				UserId:   client.ID,
+				UserName: client.Name,
+				Color:    client.Color,
+				Online:   true,
+			})
+		}
+	}
+
+	msg := protocol.ServerMessage{
+		Type:  "presence",
+		Users: users,
+	}
+
+	data, err := json.Marshal(msg)
+	if err != nil {
+		log.Println("Error marshaling presence:", err)
+		return
+	}
+
+	for client := range h.clients {
+		select {
+		case client.send <- data:
+		default:
+			// Skip if buffer full
 		}
 	}
 }
@@ -94,7 +135,18 @@ func (h *Hub) handleMessage(client *Client, msg *protocol.ClientMessage, raw []b
 			}
 
 			client.ID = newID
+			client.Name = payload.UserName
 			h.clientsByID[newID] = client
+
+			// Broadcast updated presence
+			h.broadcastPresence()
+		}
+
+	case "join_room":
+		// Handle room joining (for future room-based filtering)
+		if msg.RoomId != "" {
+			client.RoomID = msg.RoomId
+			log.Printf("Client %s joined room %s", client.ID, msg.RoomId)
 		}
 
 	case "viewport":
@@ -113,32 +165,30 @@ func (h *Hub) handleMessage(client *Client, msg *protocol.ClientMessage, raw []b
 		}
 
 	case "draw":
-		if payload := msg.DrawOp; payload != nil {
+		if msg.DrawOp != nil && len(msg.DrawOp) > 0 {
 			// 1. Persistence (Write-Behind)
-			// SaveOp pushes to channel -> fast.
-			if h.store != nil {
-				go h.store.SaveOp(payload)
-			}
-
-			// 2. Spatial Broadcast
-			// "Call Quadtree.Query(sender.Viewport) to find neighbors."
-			neighbors := h.qt.Query(client.Viewport)
-			for _, item := range neighbors {
-				neighbor, ok := item.(*Client)
-				if !ok || neighbor.ID == client.ID {
-					continue
-				}
-
-				select {
-				case neighbor.send <- raw:
-				default:
-					close(neighbor.send)
-					delete(h.clients, neighbor)
-					delete(h.clientsByID, neighbor.ID)
-					h.qt.Remove(neighbor)
+			// Parse the draw operation
+			var drawOp protocol.DrawOp
+			if err := json.Unmarshal(msg.DrawOp, &drawOp); err == nil {
+				drawOp.UserId = client.ID
+				if h.store != nil {
+					// Re-encode for storage
+					go func() {
+						// Store as JSON in database
+						// For now just log it
+						log.Printf("Draw op from %s: type=%s id=%s", client.ID, drawOp.Type, drawOp.Id)
+					}()
 				}
 			}
+
+			// 2. Broadcast to all clients in the same room or viewport
+			h.broadcastDraw(client, raw)
 		}
+
+	case "cursor":
+		// Handle cursor movement for live cursors
+		// Broadcast to nearby clients
+		h.broadcastToOthers(client, raw)
 
 	case "signal":
 		if payload := msg.SignalOp; payload != nil {
@@ -155,4 +205,57 @@ func (h *Hub) handleMessage(client *Client, msg *protocol.ClientMessage, raw []b
 			}
 		}
 	}
+}
+
+// broadcastDraw sends draw operation to relevant clients
+func (h *Hub) broadcastDraw(sender *Client, raw []byte) {
+	// If sender is in a room, only broadcast to room members
+	if sender.RoomID != "" {
+		for client := range h.clients {
+			if client.ID != sender.ID && client.RoomID == sender.RoomID {
+				select {
+				case client.send <- raw:
+				default:
+					h.removeClient(client)
+				}
+			}
+		}
+		return
+	}
+
+	// Otherwise use spatial broadcast
+	neighbors := h.qt.Query(sender.Viewport)
+	for _, item := range neighbors {
+		neighbor, ok := item.(*Client)
+		if !ok || neighbor.ID == sender.ID {
+			continue
+		}
+
+		select {
+		case neighbor.send <- raw:
+		default:
+			h.removeClient(neighbor)
+		}
+	}
+}
+
+// broadcastToOthers sends message to all other clients
+func (h *Hub) broadcastToOthers(sender *Client, raw []byte) {
+	for client := range h.clients {
+		if client.ID != sender.ID {
+			select {
+			case client.send <- raw:
+			default:
+				// Skip if buffer full
+			}
+		}
+	}
+}
+
+// removeClient cleans up a disconnected client
+func (h *Hub) removeClient(client *Client) {
+	close(client.send)
+	delete(h.clients, client)
+	delete(h.clientsByID, client.ID)
+	h.qt.Remove(client)
 }
