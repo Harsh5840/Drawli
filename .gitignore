@@ -1,38 +1,18 @@
-# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+# Binaries
+bin/
+*.exe
+*.dll
 
 # Dependencies
-node_modules
-.pnp
-.pnp.js
+node_modules/
+vendor/
 
-# Local env files
+# Environment
 .env
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
 
-# Testing
-coverage
+# Proto generated (optional, if we want to ignore them)
+# internal/protocol/*.pb.go
 
-# Turbo
-.turbo
-
-# Vercel
-.vercel
-
-# Build Outputs
-.next/
-out/
-build
-dist
-
-
-# Debug
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-
-# Misc
+# OS
 .DS_Store
-*.pem
+Thumbs.db

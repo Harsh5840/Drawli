@@ -1,0 +1,40 @@
+syntax = "proto3";
+package protocol;
+option go_package = "./protocol";
+
+message ClientMessage {
+  oneof payload {
+    Handshake handshake = 1;
+    DrawOp draw_op = 2;
+    ViewportUpdate viewport = 3;
+    WebRTCSignal signal_op = 4; // For Video Calling
+  }
+}
+
+message Handshake { 
+  string user_id = 1; 
+  string user_name = 2; 
+}
+
+message DrawOp {
+  string id = 1;
+  string user_id = 2;
+  float x = 3; 
+  float y = 4;
+  string color = 5;
+}
+
+message ViewportUpdate {
+  float x = 1; 
+  float y = 2; 
+  float width = 3; 
+  float height = 4;
+}
+
+// WebRTC Signaling (Pass-through)
+message WebRTCSignal {
+  string target_user_id = 1; // The ID of the user we want to call
+  string type = 2;           // "offer", "answer", "candidate"
+  string sdp = 3;
+  string candidate = 4;
+}
