@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { CanvasEngine } from "./canvas";
+import CanvasEngine from "./canvas/CanvasEngine";
 import { Loader2 } from "lucide-react";
 
 interface RoomCanvasProps {
