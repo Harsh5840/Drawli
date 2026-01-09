@@ -1,191 +1,89 @@
 "use client";
 
-import { useRef, useEffect, useState } from "react";
 import { features, fetureType } from "@/data/feature";
-import TitleAnswer from "../ui/TitleAnswer";
-import TitleQuestion from "../ui/TitleQuestion";
-import FeatureCard from "../ui/FeatureCard";
+import { ArrowUpRight } from "lucide-react";
 
-type Position = { x: number; y: number };
+function FeatureCard({ Icon, title, description, index }: fetureType & { index: number }) {
+    return (
+        <div
+            className="group relative p-6 rounded-2xl bg-white/[0.02] border border-white/[0.05] hover:border-cyan-500/30 hover:bg-white/[0.04] transition-all duration-300"
+            style={{ animationDelay: `${index * 100}ms` }}
+        >
+            {/* Icon */}
+            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-cyan-500/20 to-blue-600/20 border border-cyan-500/20 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                <Icon className="w-5 h-5 text-cyan-400" />
+            </div>
+
+            {/* Content */}
+            <h3 className="text-lg font-semibold text-white mb-2 group-hover:text-cyan-300 transition-colors">
+                {title}
+            </h3>
+            <p className="text-sm text-gray-400 leading-relaxed">
+                {description}
+            </p>
+
+            {/* Hover arrow */}
+            <ArrowUpRight className="absolute top-6 right-6 w-4 h-4 text-cyan-500 opacity-0 group-hover:opacity-100 transition-opacity" />
+
+            {/* Glow effect on hover */}
+            <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-cyan-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
+        </div>
+    );
+}
 
 export default function SecondSection() {
-    const cardRefs = useRef<(HTMLDivElement | null)[]>([]);
-    const svgRef = useRef<SVGSVGElement>(null);
-    const [paths, setPaths] = useState<string[]>([]);
-
-    const createWavePath = (from: Position, to: Position) => {
-        const dx = to.x - from.x;
-        const dy = to.y - from.y;
-        const distance = Math.sqrt(dx * dx + dy * dy);
-        
-        // Adaptive curve height based on distance and screen size
-        const curveHeight = Math.min(50, distance * 0.2);
-        
-        // Control points for smoother curves
-        const cp1x = from.x + dx * 0.3;
-        const cp1y = from.y - curveHeight;
-        const cp2x = from.x + dx * 0.7;
-        const cp2y = to.y - curveHeight;
-        
-        return `M ${from.x} ${from.y} C ${cp1x} ${cp1y}, ${cp2x} ${cp2y}, ${to.x} ${to.y}`;
-    };
-
-    const updatePaths = () => {
-        const svgBox = svgRef.current?.getBoundingClientRect();
-        if (!svgBox) return;
-
-        // Filter out null elements and get valid positions
-        const positions: Position[] = cardRefs.current
-        .map((el, index) => {
-            if (!el) return null;
-
-            const rect = el.getBoundingClientRect();
-            const centerX = rect.left + rect.width / 2 - svgBox.left;
-            const centerY = rect.top + rect.height / 2 - svgBox.top;
-
-            // Check if we're in mobile/tablet view (single column)
-            const isMobile = window.innerWidth < 768;
-            
-            if (isMobile) {
-            // For mobile: connect from bottom center to top center
-            return {
-                x: centerX,
-                y: index === 0 ? centerY + rect.height / 4 : centerY - rect.height / 4,
-            };
-            } else {
-            // For desktop: connect from right edge to left edge (zigzag pattern)
-            const isLeftCol = (index % 2 === 0);
-            return {
-                x: isLeftCol 
-                ? rect.left + rect.width - svgBox.left - 20  // Right edge of left col
-                : rect.left - svgBox.left + 20,              // Left edge of right col
-                y: centerY,
-            };
-            }
-        })
-        .filter((pos): pos is Position => pos !== null); // Type guard to remove nulls
-
-        const newPaths: string[] = [];
-        for (let i = 0; i < positions.length - 1; i++) {
-            // @ts-ignore
-        newPaths.push(createWavePath(positions[i], positions[i + 1]));
-        }
-
-        setPaths(newPaths);
-    };
-
-    useEffect(() => {
-        // Delay initial update to ensure DOM is ready
-        const timer = setTimeout(updatePaths, 100);
-        
-        const handleUpdate = () => {
-        requestAnimationFrame(updatePaths);
-        };
-
-        window.addEventListener("resize", handleUpdate);;
-        
-        return () => {
-        clearTimeout(timer);
-        window.removeEventListener("resize", handleUpdate);
-        };
-    }, []);
-
     return (
-            <div className="relative flex flex-col justify-center md:mt-0 space-y-10">
-                {/* Wavy SVG Paths */}
-                <svg
-                    ref={svgRef}
-                    className="absolute top-0 left-0 w-full h-full pointer-events-none z-10"
-                >
-                    <defs>
-                    <filter id="glow">
-                        <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
-                        <feMerge> 
-                        <feMergeNode in="coloredBlur"/>
-                        <feMergeNode in="SourceGraphic"/>
-                        </feMerge>
-                    </filter>
-                    </defs>
-                    {paths.map((path, idx) => (
-                        <g key={idx}>
-                            {/* Outer glow layer */}
-                            <path
-                            d={path}
-                            fill="none"
-                            stroke="#00d4ff"
-                            strokeWidth={4}
-                            strokeOpacity={0.3}
-                            style={{ 
-                                filter: "blur(4px)",
-                                strokeDasharray: "5,3",
-                                animation: "dash 2s linear infinite"
-                            }}
-                            />
-                            {/* Middle glow layer */}
-                            <path
-                            d={path}
-                            fill="none"
-                            stroke="#00a8cc"
-                            strokeWidth={3}
-                            strokeOpacity={0.6}
-                            style={{ 
-                                filter: "blur(2px)",
-                                strokeDasharray: "5,3",
-                                animation: "dash 2s linear infinite"
-                            }}
-                            />
-                            {/* Main line */}
-                            <path
-                            d={path}
-                            fill="none"
-                            stroke="#00d4ff"
-                            strokeWidth={2}
-                            strokeOpacity={0.9}
-                            style={{ 
-                                filter: "drop-shadow(0 0 6px rgba(0, 212, 255, 0.5))",
-                                strokeDasharray: "5,3",
-                                animation: "dash 2s linear infinite"
-                            }}
-                            />
-                        </g>
-                    ))}
-            </svg>
+        <section id="features" className="relative py-24 md:py-32">
+            {/* Background gradient */}
+            <div className="absolute inset-0 bg-gradient-to-b from-transparent via-cyan-500/[0.02] to-transparent pointer-events-none" />
 
-            <style jsx>{`
-                @keyframes dash {
-                to {
-                    stroke-dashoffset: -16;
-                }
-                }
-            `}</style>
-
-            <div className="space-y-5 flex flex-col items-center z-30 relative">
-                <TitleQuestion
-                startNormalText="Why choose"
-                midColorText="XDraw"
-                lastNormalText="?"
-                />
-                <TitleAnswer text="Everything you need to bring your ideas to life, with the simplicity and power you deserve." />
-            </div>
-            <div className="mx-auto z-20 relative">
-                <div className="flex flex-wrap justify-center gap-x-36 gap-y-16 max-w-3xl">
-                {features.map((feature: fetureType, index) => (
-                    <div
-                    key={index + feature.title}
-                    ref={(el) => {cardRefs.current[index] = el}}
-                    className={`relative z-30 w-[300px] bg-[hsl(222.2,84%,4.9%)] ${
-                        index % 2 === 0 ? "md:translate-y-2" : "md:-translate-y-4 "
-                    }`}
-                    >
-                    <FeatureCard
-                        title={feature.title}
-                        Icon={feature.Icon}
-                        description={feature.description}
-                    />
+            <div className="relative max-w-7xl mx-auto px-6 lg:px-8">
+                {/* Section Header */}
+                <div className="text-center mb-16 space-y-4">
+                    <div className="inline-flex items-center px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 text-xs font-medium mb-4">
+                        Features
                     </div>
-                ))}
+                    <h2 className="text-4xl md:text-5xl font-bold text-white">
+                        Why choose{' '}
+                        <span className="bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent">
+                            Drawli
+                        </span>
+                        ?
+                    </h2>
+                    <p className="text-lg text-gray-400 max-w-2xl mx-auto">
+                        Everything you need to bring your ideas to life, with the simplicity and power you deserve.
+                    </p>
+                </div>
+
+                {/* Features Grid */}
+                <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {features.map((feature, index) => (
+                        <FeatureCard
+                            key={feature.title}
+                            Icon={feature.Icon}
+                            title={feature.title}
+                            description={feature.description}
+                            index={index}
+                        />
+                    ))}
+                </div>
+
+                {/* CTA Section */}
+                <div className="mt-20 text-center">
+                    <div className="inline-flex flex-col sm:flex-row items-center gap-4 p-6 rounded-2xl bg-gradient-to-r from-cyan-500/10 to-blue-600/10 border border-cyan-500/20">
+                        <p className="text-lg text-gray-300">
+                            Ready to start creating?
+                        </p>
+                        <a
+                            href="/draw"
+                            className="inline-flex items-center px-6 py-3 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 text-white font-medium hover:shadow-lg hover:shadow-cyan-500/25 transition-all"
+                        >
+                            Try Drawli Free
+                            <ArrowUpRight className="ml-2 w-4 h-4" />
+                        </a>
+                    </div>
                 </div>
             </div>
-        </div>
+        </section>
     );
 }

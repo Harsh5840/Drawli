@@ -1,51 +1,7 @@
-"use client"
-import { SelectShapeType } from "@/actions/canva/Game";
-import { HeroGame } from "@/actions/canva/HeroGame";
-import { DotBackgroundDemo } from "@/components/ui/GridDot";
-import ToolKit from "@/components/ui/ToolKit";
+"use client";
 
+import { CanvasEngine } from "@/components/canvas";
 
-import { useEffect, useRef, useState } from "react";
-
-const DrawCanvas = () => {
-     const canvasRef = useRef<HTMLCanvasElement | null>(null);
-     const [game, setGame] = useState<HeroGame>();
-     const [shape, setShape] = useState<SelectShapeType>(SelectShapeType.Rect);
-     const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
-     
-     useEffect(() => {
-          if(!game){
-               return
-          }
-          game.setShape(shape);
-     }, [shape])
-     
-     useEffect(() => {
-          const canvas = canvasRef.current;
-          if (!canvas) return;
-
-          const g = new HeroGame(canvas);
-          setGame(g);
-          return () => {
-               g.cleanUp();
-          }
-     }, [canvasRef]);
-
-     useEffect(() => {
-          if (typeof window !== "undefined") {
-             setDimensions({ width: window.innerWidth, height: window.innerHeight });
-          }
-     }, []);
-
-     return (
-          <div className="overflow-hidden max-h-screen">
-               <canvas ref={canvasRef} className="z-50 relative" height={dimensions.height} width={dimensions.width}></canvas>
-               <div className="fixed inset-0 min-h-screen min-w-screen z-0">
-                    <DotBackgroundDemo />
-               </div>
-               <ToolKit setShape={setShape} shape={shape}/>
-          </div>
-     )
+export default function DrawPage() {
+     return <CanvasEngine />;
 }
-
-export default DrawCanvas
