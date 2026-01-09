@@ -47,3 +47,17 @@ export async  function signup({ username, password, name }: signupType): Promise
           return false;
      }
 }
+
+// Initiates Google OAuth flow by redirecting to backend
+export function initiateGoogleLogin() {
+     window.location.href = 'http://localhost:8080/v1/auth/google';
+}
+
+// Handle the OAuth callback - store token and redirect
+export function handleGoogleCallback(token: string): boolean {
+     if (token) {
+          localStorage.setItem('token', token);
+          return true;
+     }
+     return false;
+}

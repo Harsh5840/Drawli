@@ -140,3 +140,57 @@ func (h *AuthHandler) SignIn(w http.ResponseWriter, r *http.Request) {
 		User:  user,
 	})
 }
+
+// GoogleLogin initiates the Google OAuth flow
+func (h *AuthHandler) GoogleLogin(w http.ResponseWriter, r *http.Request) {
+	config := auth.GetGoogleOAuthConfig()
+
+	// Generate state token for CSRF protection
+	state := "drawli-oauth-state" // In production, use a random secure token stored in session
+
+	url := config.AuthCodeURL(state)
+	http.Redirect(w, r, url, http.StatusTemporaryRedirect)
+}
+
+// GoogleCallback handles the OAuth callback from Google
+func (h *AuthHandler) GoogleCallback(w http.ResponseWriter, r *http.Request) {
+	// Get the authorization code
+	code := r.URL.Query().Get("code")
+	if code == "" {
+		http.Error(w, "Code not found", http.StatusBadRequest)
+		return
+	}
+
+	// Exchange code for token
+	config := auth.GetGoogleOAuthConfig()
+	token, err := config.Exchange(r.Context(), code)
+	if err != nil {
+		http.Error(w, "Failed to exchange token: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	// Get user info from Google
+	userInfo, err := auth.GetGoogleUserInfo(token.AccessToken)
+	if err != nil {
+		http.Error(w, "Failed to get user info: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	// Find or create user in our database
+	user, err := h.userStore.FindOrCreateByGoogleID(r.Context(), userInfo.ID, userInfo.Email, userInfo.Name, userInfo.Picture)
+	if err != nil {
+		http.Error(w, "Failed to create user: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	// Generate JWT for our app
+	jwtToken, err := auth.GenerateToken(user.ID, user.Username)
+	if err != nil {
+		http.Error(w, "Failed to generate token: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	// Redirect to frontend with token
+	frontendURL := "http://localhost:3000/auth/callback?token=" + jwtToken
+	http.Redirect(w, r, frontendURL, http.StatusTemporaryRedirect)
+}

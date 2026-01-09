@@ -80,6 +80,8 @@ func main() {
 	// Auth endpoints (public)
 	mux.HandleFunc("/v1/auth/signup", authHandler.SignUp)
 	mux.HandleFunc("/v1/auth/signin", authHandler.SignIn)
+	mux.HandleFunc("/v1/auth/google", authHandler.GoogleLogin)
+	mux.HandleFunc("/v1/auth/google/callback", authHandler.GoogleCallback)
 
 	// Room endpoints
 	mux.HandleFunc("/v1/room/create-room", auth.AuthMiddlewareFunc(roomHandler.CreateRoom))
