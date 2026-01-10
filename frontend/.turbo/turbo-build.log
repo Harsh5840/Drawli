@@ -1,0 +1,39 @@
+[?9001h[?1004h[?25l[2J[m[2;1H> x-draw@0.1.0 build D:\Drawli\Drawli\apps\drawli-front
+> next build[5;1H]0;C:\WINDOWS\system32\cmd.exe[?25h   [38;2;173;127;168m[1m▲ Next.js 15.3.5
+[m
+ [37m[1m [m Creating an optimized production build ...
+ [32m[1m✓[m Compiled successfully in 3.0s
+ [37m[1m [m Linting and checking validity of types  [36m.[?25l[m[K[59C [37m[1m [m Linting and checking validity of types  [36m..[m[K[59C [37m[1m [m Linting and checking validity of types  [36m...[m ⨯ ESLint: Failed to load config "next/core-web-vitals" to extend from. Referenced from: 
+[59C[K[59C [37m[1m [m Linting and checking validity of types  [36m.[m[K[59C [37m[1m [m Linting and checking validity of types  [36m..[m[K[59C [37m[1m [m Linting and checking validity of types  [36m...[m[K[59C [37m[1m [m Linting and checking validity of types  [36m.[m[K[59C [37m[1m [m Linting and checking validity of types  [36m..[m[K[59C [37m[1m [m Linting and checking validity of types  [36m...[m[K[59C [37m[1m [m Linting and checking validity of types  [36m.[m[K[59C [37m[1m [m Linting and checking validity of types  [36m..[m[K[59C [37m[1m [m Linting and checking validity of types  [36m...[m[K[59C [37m[1m [m Linting and checking validity of types  [36m.[m[K[59C [37m[1m [m Linting and checking validity of types  [36m..[m[K[59C [37m[1m [m Linting and checking validity of types  [36m...[m[K[59C [37m[1m [m Linting and checking validity of types  [36m.[m[K[59C [32m[1m✓[m Linting and checking validity of types    [?25h
+ [37m[1m [m Collecting page data  [36m.[K[?25l[33C[m[K[59C [37m[1m [m Collecting page data  [36m..[m[K[59C [37m[1m [m Collecting page data  [36m...[m[K[59C [37m[1m [m Collecting page data  [36m.[m[K[59C [37m[1m [m Collecting page data  [36m..[m[K[59C [32m[1m✓[m Collecting page data    [?25h
+[?25l [37m[1m [m Generating static pages (0/9)  [36m[    ][m[K[59C [37m[1m [m Generating static pages (0/9)  [36m[=   ][m[K[59C [37m[1m [m Generating static pages (0/9)  [36m[==  ][m[K[59C [37m[1m [m Generating static pages (0/9)  [36m[=== ][m[K[59C [37m[1m [m Generating static pages (4/9)  [36m[ ===][m[K[59C [32m[1m✓[m Generating static pages (9/9)[?25h
+[?25l [37m[1m [m Finalizing page optimization  [36m. [37m[1m [m Collecting build trace
+[10;59Hes  [36m.[K[55C[m[K[59C [37m[1m [m Collecting build traces  [36m..[K[29C[m[K[59C [37m[1m [m Collecting build traces  [36m...[K[28C[m[K[59C [37m[1m [m Collecting build traces  [36m.[K[30C[m[K[59C [37m[1m [m Collecting build traces  [36m..[K[29C[m[K[59C [37m[1m [m Collecting build traces  [36m...[K[28C[m[K[59C [37m[1m [m Collecting build traces  [36m.[K[30C[m[K[59C [37m[1m [m Collecting build traces  [36m..[K[29C[m[K[59C [37m[1m [m Collecting build traces  [36m...[K[28C[m[K[59C [37m[1m [m Collecting build traces  [36m.[K[30C[m[K[59C [37m[1m [m Collecting build traces  [36m..[K[29C[m[K[59C [37m[1m [m Collecting build traces  [36m...[K[28C[m[K[59C [37m[1m [m Collecting build traces  [36m.[K[30C[m[K[59C [37m[1m [m Collecting build traces  [36m..[K[29C[m[K[59C [37m[1m [m Collecting build traces  [36m...[K[28C[m[K[59C [37m[1m [m Collecting build traces  [36m.[K[30C[m[K[59C [37m[1m [m Collecting build traces  [36m..[K[29C[m[K[59C [37m[1m [m Collecting build traces  [36m...[K[28C[m[K[59C [37m[1m [m Collecting build traces  [36m.[K[30C[m[K[59C [37m[1m [m Collecting build traces  [36m..[K[29C[m[K[59C [37m[1m [m Collecting build traces  [36m...[K[28C[m[K[59C [37m[1m [m Collecting build traces  [36m.[K[30C[m[K[59C [37m[1m [m Collecting build traces  [36m..[K[29C[m[K[59C [37m[1m [m Collecting build traces  [36m...[K[28C[m[K[59C [37m[1m [m Collecting build traces  [36m.[K[30C[m[K[59C [37m[1m [m Collecting build traces  [36m..[K[29C[m[K[59C [37m[1m [m Collecting build traces  [36m...[K[28C[m[K[59C [37m[1m [m Collecting build traces  [36m.[K[30C[m[K[59C [37m[1m [m Collecting build traces  [36m..[K[29C[m[K[59C [37m[1m [m Collecting build traces  [36m...[K[28C[m[K[59C [32m[1m✓[m Collecting build traces    [?25h
+ [32m[1m✓[m Finalizing page optimization[K
+
+[4mRoute (app)[24m                                 [K[4mSize[24m  [4mFirst Loa[24m
+[4m[10;59Had JS[24m[K
+┌ ○ /                                    12.9 kB         [37m[1m18[m
+[37m[1m[10;59H87 kB[22m[K[m
+├ ○ /_not-found                            980 B         [37m[1m10[m
+[37m[1m[10;59H03 kB[22m[K[m
+├ ○ /draw                                  946 B         [37m[1m17[m
+[37m[1m[10;59H75 kB[22m[K[m
+├ ○ /room                                 2.8 kB         [37m[1m13[m
+[37m[1m[10;59H37 kB[22m[K[m
+├ ƒ /room/[slug]                         2.83 kB         [37m[1m16[m
+[37m[1m[10;59H66 kB[22m[K[m
+├ ○ /signin                              2.89 kB         [37m[1m13[m
+[37m[1m[10;59H37 kB[22m[K[m
+└ ○ /signup                              2.89 kB         [37m[1m13[m
+[37m[1m[10;59H37 kB[22m[K[m
++ First Load JS shared by all[37m[1m[13C102 kB[m[K
+  ├ chunks/850-69f695ef7fd569e5.js       46.4 kB
+  ├ chunks/c56a0f6e-9b5f4d2885b5ff91.js  53.2 kB
+  └ other shared chunks (total)          1.99 kB
+
+
+○  (Static)   prerendered as static content
+ƒ  (Dynamic)  server-rendered on demand
+
+[?9001l[?1004l
