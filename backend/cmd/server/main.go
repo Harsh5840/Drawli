@@ -92,8 +92,11 @@ func main() {
 	handler := corsMiddleware(mux)
 
 	// Start server
-	addr := getEnv("PORT", ":8080")
-	log.Printf("Server listening on %s", addr)
+	port := getEnv("PORT", "8080")
+	if port[0] != ':' {
+		port = ":" + port
+	}
+	log.Printf("Server listening on %s", port)
 	log.Println("API Endpoints:")
 	log.Println("  POST /v1/auth/signup - Register new user")
 	log.Println("  POST /v1/auth/signin - Login")
@@ -102,7 +105,7 @@ func main() {
 	log.Println("  GET  /v1/room/chat/{roomId} - Get room history")
 	log.Println("  WS   /ws - WebSocket connection")
 
-	if err := http.ListenAndServe(addr, handler); err != nil {
+	if err := http.ListenAndServe(port, handler); err != nil {
 		log.Fatal("ListenAndServe: ", err)
 	}
 }
