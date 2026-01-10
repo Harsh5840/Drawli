@@ -1,2 +1,2 @@
-export const HTTP_BACKEND = "https://drawli.onrender.com";
-export const WS_BACKEND = "wss://drawli.onrender.com";
+export const HTTP_BACKEND = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
+export const WS_BACKEND = process.env.NEXT_PUBLIC_WS_URL || "ws://localhost:8080";
