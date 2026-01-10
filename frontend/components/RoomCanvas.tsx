@@ -3,6 +3,7 @@
 import { useEffect, useState, useMemo } from "react";
 import CanvasEngine from "./canvas/CanvasEngine";
 import { Loader2 } from "lucide-react";
+import { WS_BACKEND } from "@/lib/config";
 
 interface RoomCanvasProps {
      roomId: string;
@@ -42,7 +43,7 @@ export default function RoomCanvas({ roomId }: RoomCanvasProps) {
           const jwt = token.includes(' ') ? token.split(' ')[1] : token;
 
           // Connect to WebSocket
-          const ws = new WebSocket(`ws://localhost:8080/ws?token=${jwt}`);
+          const ws = new WebSocket(`${WS_BACKEND}/ws?token=${jwt}`);
 
           ws.onopen = () => {
                setSocket(ws);

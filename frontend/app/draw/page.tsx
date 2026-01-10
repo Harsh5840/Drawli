@@ -6,6 +6,7 @@ import CanvasEngine from "@/components/canvas/CanvasEngine";
 import { Radio, Users, Copy, Check, X, Loader2 } from "lucide-react";
 import { createRoom } from "@/actions/room";
 import toast from "react-hot-toast";
+import { WS_BACKEND } from "@/lib/config";
 
 export default function DrawPage() {
      const router = useRouter();
@@ -65,7 +66,7 @@ export default function DrawPage() {
 
                // Connect to WebSocket
                const jwt = token.includes(' ') ? token.split(' ')[1] : token;
-               const ws = new WebSocket(`ws://localhost:8080/ws?token=${jwt}`);
+               const ws = new WebSocket(`${WS_BACKEND}/ws?token=${jwt}`);
 
                ws.onopen = () => {
                     setSocket(ws);

@@ -1,6 +1,7 @@
 
 import axios from 'axios';
 import toast from 'react-hot-toast';
+import { HTTP_BACKEND } from '@/lib/config';
 
 export interface signinType {
     username: string;
@@ -15,7 +16,7 @@ export interface signupType {
 
 export async function signin({ username, password }: signinType): Promise<boolean> {
      try {
-          const { data } = await axios.post('http://localhost:8080/v1/auth/signin', {
+          const { data } = await axios.post(`${HTTP_BACKEND}/v1/auth/signin`, {
                username,
                password
           })
@@ -32,7 +33,7 @@ export async function signin({ username, password }: signinType): Promise<boolea
 
 export async  function signup({ username, password, name }: signupType): Promise<boolean> {
      try {
-          const { data } = await axios.post('http://localhost:8080/v1/auth/signup', {
+          const { data } = await axios.post(`${HTTP_BACKEND}/v1/auth/signup`, {
                name,
                username,
                password
@@ -50,7 +51,7 @@ export async  function signup({ username, password, name }: signupType): Promise
 
 // Initiates Google OAuth flow by redirecting to backend
 export function initiateGoogleLogin() {
-     window.location.href = 'http://localhost:8080/v1/auth/google';
+     window.location.href = `${HTTP_BACKEND}/v1/auth/google`;
 }
 
 // Handle the OAuth callback - store token and redirect
